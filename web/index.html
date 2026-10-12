@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050a18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arise">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>html{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);background:#050a18}body{margin:0}</style>
+<title>Arise: Система</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Концепт: тёмный экран «Системы» из манхвы: узкая колонка окон с неоновыми рамками и нижняя панель вкладок. Один тёмный вид по задумке. */
+:root {
+  --bg: #050a18; --bg-top: #0b1534; --panel: #0a1428; --track: #16233f;
+  --blue: #3fa9ff; --cyan: #7df9ff; --purple: #a37bff; --red: #ff5566; --gold: #ffc857; --green: #4dffb0;
+  --text: #d6e8ff; --dim: #8aa0c4;
+  --display: 'Rajdhani', 'Arial Narrow', sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg) linear-gradient(180deg, var(--bg-top), var(--bg) 420px) no-repeat; color: var(--text); font: 15px/1.45 var(--body); padding-inline: 16px; padding-block: 12px 96px; -webkit-tap-highlight-color: transparent; }
+#app, .tabbar-in { max-width: 560px; margin-inline: auto; }
+#app { display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3, p { margin: 0; }
+.win { --a: var(--blue); background: var(--panel); border: 1px solid var(--a); border-radius: 4px; padding: 14px; box-shadow: 0 0 18px color-mix(in srgb, var(--a) 30%, transparent); min-width: 0; }
+.win > h2 { font: 700 15px var(--display); letter-spacing: .14em; color: var(--a); text-transform: uppercase; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid color-mix(in srgb, var(--a) 40%, transparent); }
+.win > h2::before { content: '[ '; } .win > h2::after { content: ' ]'; }
+.red { --a: var(--red); } .cyan { --a: var(--cyan); } .purple { --a: var(--purple); } .green { --a: var(--green); } .gold { --a: var(--gold); } .grey { --a: var(--dim); }
+.dim { color: var(--dim); } .small { font-size: 12.5px; } .b { font-weight: 600; } .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.col { color: var(--a); }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; }
+button, input { font: inherit; }
+.btn { --a: var(--blue); background: transparent; color: var(--a); border: 1px solid var(--a); border-radius: 3px; padding: 9px 13px; min-height: 40px; font: 600 14px var(--mono); cursor: pointer; }
+.btn:active { background: color-mix(in srgb, var(--a) 22%, transparent); }
+.btn:disabled { color: var(--dim); border-color: var(--track); cursor: default; }
+.btn.wide { width: 100%; }
+.btn:focus-visible, .tab:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.bar { height: 8px; background: var(--track); border-radius: 2px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--a, var(--blue)); }
+.ex { --a: var(--blue); display: flex; flex-direction: column; gap: 8px; }
+.ex.done { --a: var(--green); }
+.ex .bar > i { background: var(--a); }
+.big { font: 700 28px var(--display); }
+.title-xl { font: 700 24px var(--display); letter-spacing: .02em; }
+input[type=text], input[type=number], input[type=search], textarea { width: 100%; background: #08102a; color: var(--text); border: 1px solid var(--track); border-radius: 3px; padding: 10px 12px; font: 16px var(--body); }
+textarea { min-height: 90px; font: 12px var(--mono); resize: vertical; }
+.chip { --a: var(--blue); border: 1px solid var(--track); background: transparent; color: var(--text); padding: 7px 12px; border-radius: 3px; min-height: 36px; font: 500 13px var(--mono); cursor: pointer; }
+.chip.on { background: var(--blue); color: var(--bg); border-color: var(--blue); }
+.rank { width: 64px; height: 64px; flex: none; display: grid; place-items: center; border: 2px solid var(--a); border-radius: 4px; font: 700 36px var(--display); color: var(--a); background: var(--bg); }
+.stat { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-block: 4px; }
+.kv { display: flex; justify-content: space-between; gap: 12px; padding-block: 3px; }
+.tabbar { position: fixed; inset: auto 0 0 0; background: var(--panel); border-top: 1px solid var(--track); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); z-index: 5; }
+.tabbar-in { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.tab { background: transparent; border: 0; color: var(--dim); padding: 8px 2px; border-radius: 3px; font: 600 12px var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab.on { color: var(--bg); background: var(--blue); }
+.overlay { position: fixed; inset: 0; background: rgba(2, 5, 14, .78); z-index: 20; display: grid; place-items: center; padding: 20px; }
+.overlay .win { width: min(420px, 100%); max-height: 86%; overflow: auto; }
+.pre { white-space: pre-line; }
+.timer { font: 700 34px var(--display); color: var(--cyan); }
+.flash { animation: flash .5s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 34px var(--a); } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.welcome { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; }
+</style>
+
+<div id="app"></div>
+<nav class="tabbar" id="tabbar" hidden><div class="tabbar-in" id="tabs"></div></nav>
+<div id="modal"></div>
+
+<script>
+// ---- Игровая логика (порт Kotlin GameEngine) ----
+const STATS = { STR: 'Сила', AGI: 'Ловкость', VIT: 'Выносливость', INT: 'Интеллект' };
+const DIFFS = {
+  EASY: { title: 'Новичок', mult: 0.7, hint: '70% от нормы' },
+  NORMAL: { title: 'Охотник', mult: 1.0, hint: '100% от нормы' },
+  HARD: { title: 'Монарх', mult: 1.3, hint: '130% от нормы' }
+};
+const EX = {
+  PUSHUPS: { title: 'Отжимания', unit: 'повт.', stat: 'STR', base: 10, growth: 2, cap: 100, round: 1, dpu: 1.0 },
+  SITUPS: { title: 'Пресс', unit: 'повт.', stat: 'VIT', base: 10, growth: 2, cap: 100, round: 1, dpu: 1.0 },
+  SQUATS: { title: 'Приседания', unit: 'повт.', stat: 'AGI', base: 10, growth: 2, cap: 100, round: 1, dpu: 1.0 },
+  RUN: { title: 'Бег', unit: 'км', stat: 'VIT', base: 1000, growth: 200, cap: 10000, round: 100, dpu: 0.1 },
+  PLANK: { title: 'Планка', unit: '', stat: 'INT', base: 30, growth: 5, cap: 300, round: 5, dpu: 0.5, timed: true },
+  BURPEES: { title: 'Берпи', unit: 'повт.', stat: 'STR', base: 10, growth: 1, cap: 100, round: 1, dpu: 1.0 }
+};
+const DAILY = ['PUSHUPS', 'SITUPS', 'SQUATS', 'RUN', 'PLANK'];
+const QUICK = { RUN: [500, 1000, 2000], PLANK: [15, 30, 60] };
+const quickSteps = t => QUICK[t] || [5, 10, 20];
+const RANKS = [
+  { letter: 'E', title: 'Слабейший охотник', min: 1 },
+  { letter: 'D', title: 'Охотник', min: 10 },
+  { letter: 'C', title: 'Опытный охотник', min: 20 },
+  { letter: 'B', title: 'Элитный охотник', min: 35 },
+  { letter: 'A', title: 'Охотник национального уровня', min: 50 },
+  { letter: 'S', title: 'Монарх', min: 70 }
+];
+const rankOf = level => RANKS.filter(r => level >= r.min).pop();
+const SHADOWS = [
+  { name: 'Iron', tier: 'Рядовой', bonus: 2 }, { name: 'Tank', tier: 'Рядовой', bonus: 2 },
+  { name: 'Fangs', tier: 'Рядовой', bonus: 3 }, { name: 'Tusk', tier: 'Элита', bonus: 3 },
+  { name: 'Greed', tier: 'Элита', bonus: 4 }, { name: 'Kaisel', tier: 'Элита', bonus: 5 },
+  { name: 'Igris', tier: 'Маршал', bonus: 6 }, { name: 'Bellion', tier: 'Маршал', bonus: 7 },
+  { name: 'Beru', tier: 'Маршал', bonus: 8 }
+];
+const BOSSES = ['Каменный голем', 'Король ледяных медведей', 'Гигантский паук', 'Повелитель гоблинов',
+  'Красный страж', 'Тёмный жрец', 'Страж врат', 'Королева муравьёв'];
+const QUEST_SIZE = 5, MAX_TOKENS = 2, POINTS_PER_LEVEL = 3, BASE_STAT = 10;
+
+function valueText(t, v) {
+  if (t === 'RUN') return (v / 1000).toFixed(1);
+  if (t === 'PLANK') return Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0');
+  return String(v);
+}
+function stepLabel(t, v) {
+  if (t === 'RUN') return '+' + valueText(t, v) + ' км';
+  if (t === 'PLANK') return '+' + v + 'с';
+  return '+' + v;
+}
+
+function newState() {
+  return {
+    accepted: false, name: 'Игрок', level: 1, xp: 0,
+    stats: { STR: 10, AGI: 10, VIT: 10, INT: 10 },
+    freePoints: 0, streak: 0, bestStreak: 0, totalQuests: 0, restTokens: 1,
+    difficulty: 'NORMAL', restSeconds: 60,
+    quest: { date: '', targets: {}, progress: {}, completed: false, rested: false, statsAwarded: [] },
+    penalty: null, dungeon: null, shadows: [], extractionPity: 0
+  };
+}
+
+const xpToNext = l => 100 + 40 * (l - 1);
+const questXp = l => 60 + 8 * l;
+function target(type, level, diff) {
+  const t = EX[type];
+  const raw = Math.min(t.cap, t.base + t.growth * (level - 1)) * DIFFS[diff].mult;
+  return Math.max(t.round, Math.round(raw / t.round) * t.round);
+}
+const penaltyTarget = (level, missed) => Math.min(150, (10 + level) * Math.min(missed, 3));
+const shadowBonusPct = s => s.shadows.reduce((a, n) => a + ((SHADOWS.find(x => x.name === n) || {}).bonus || 0), 0);
+const streakBonusPct = s => Math.min(s.streak, 30);
+const xpMultiplier = s => 1 + (shadowBonusPct(s) + streakBonusPct(s)) / 100;
+const extractionChancePct = s => Math.min(90, 40 + (s.stats.INT ?? BASE_STAT) + s.extractionPity * 10);
+const dailyDamage = (level, diff) =>
+  DAILY.reduce((a, t) => a + Math.round(target(t, level, diff) * EX[t].dpu), 0);
+
+const pad2 = n => String(n).padStart(2, '0');
+const dateStr = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const epochDay = s => { const [y, m, d] = s.split('-').map(Number); return Math.round(Date.UTC(y, m - 1, d) / 86400000); };
+const fromEpochDay = n => { const d = new Date(n * 86400000); return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()); };
+function weekStart(todayS) {
+  const e = epochDay(todayS);
+  const dow = (e + 3) % 7; // 1970-01-01 = четверг; понедельник = 0
+  return fromEpochDay(e - dow);
+}
+
+function ctx(s) { return { s: structuredClone(s), events: [] }; }
+
+function grantXp(c, base) {
+  if (base <= 0) return 0;
+  let amount = Math.round(base * xpMultiplier(c.s));
+  if (c.s.penalty) amount = Math.floor(amount / 2);
+  let xp = c.s.xp + amount, level = c.s.level, points = c.s.freePoints;
+  const oldRank = rankOf(level);
+  while (xp >= xpToNext(level)) {
+    xp -= xpToNext(level); level++; points += POINTS_PER_LEVEL;
+    c.events.push({ type: 'LevelUp', level, points: POINTS_PER_LEVEL });
+  }
+  Object.assign(c.s, { xp, level, freePoints: points });
+  if (rankOf(level) !== oldRank) c.events.push({ type: 'RankUp', rank: rankOf(level) });
+  return amount;
+}
+
+function completeQuest(c) {
+  const streak = c.s.streak + 1;
+  c.s.quest.completed = true;
+  c.s.streak = streak;
+  c.s.bestStreak = Math.max(c.s.bestStreak, streak);
+  c.s.totalQuests++;
+  const idx = c.events.length;
+  const bonus = grantXp(c, Math.floor(questXp(c.s.level) / 2));
+  c.events.splice(idx, 0, { type: 'QuestComplete', xp: bonus, streak });
+  if (streak % 7 === 0 && c.s.restTokens < MAX_TOKENS) {
+    c.s.restTokens++;
+    c.events.push({ type: 'RestTokenEarned' });
+  }
+}
+
+function applyPenalty(c, missed) {
+  const loss = Math.min(c.s.xp, Math.floor(xpToNext(c.s.level) / 4) * Math.min(missed, 4));
+  const add = penaltyTarget(c.s.level, missed);
+  const prev = c.s.penalty;
+  const penalty = prev ? { target: Math.min(300, prev.target + add), progress: prev.progress } : { target: add, progress: 0 };
+  c.s.xp -= loss; c.s.streak = 0; c.s.penalty = penalty;
+  c.events.push({ type: 'PenaltyApplied', missed, xpLost: loss, burpees: penalty.target - penalty.progress });
+}
+
+function damageBoss(c, type, amount, rnd) {
+  const d = c.s.dungeon;
+  if (!d || d.defeated) return;
+  const total = d.damage + Math.round(amount * EX[type].dpu);
+  if (total < d.maxHp) { d.damage = total; return; }
+  d.damage = d.maxHp; d.defeated = true;
+  const gained = grantXp(c, questXp(c.s.level) * 3);
+  c.events.push({ type: 'BossDefeated', name: d.bossName, xp: gained });
+  const next = SHADOWS.find(x => !c.s.shadows.includes(x.name));
+  if (next) {
+    const chance = extractionChancePct(c.s);
+    if (Math.floor(rnd() * 100) < chance) {
+      c.s.shadows.push(next.name); c.s.extractionPity = 0; d.extraction = next.name;
+      c.events.push({ type: 'ShadowExtracted', shadow: next });
+    } else {
+      c.s.extractionPity++; d.extraction = 'FAILED';
+      c.events.push({ type: 'ExtractionFailed', chance });
+    }
+  }
+}
+
+function newQuest(s, date) {
+  const targets = {};
+  DAILY.forEach(t => { targets[t] = target(t, s.level, s.difficulty); });
+  return { date, targets, progress: {}, completed: false, rested: false, statsAwarded: [] };
+}
+
+function accept(state, name) {
+  const s = structuredClone(state);
+  s.accepted = true; s.name = (name || '').trim() || 'Игрок';
+  return s;
+}
+
+function refresh(state, todayS, rnd = Math.random) {
+  if (!state.accepted) return { state, events: [] };
+  const c = ctx(state);
+  const q = c.s.quest;
+  if (q.date !== todayS) {
+    if (q.date) {
+      const gap = epochDay(todayS) - epochDay(q.date);
+      if (gap < 0) return { state, events: [] };
+      const lastOk = q.completed || q.rested;
+      const missed = (lastOk ? 0 : 1) + (gap - 1);
+      if (missed > 0) applyPenalty(c, missed);
+    }
+    c.s.quest = newQuest(c.s, todayS);
+  }
+  const ws = weekStart(todayS);
+  if (!c.s.dungeon || c.s.dungeon.weekStart !== ws) {
+    const level = c.s.level;
+    const idx = ((epochDay(ws) / 7 | 0) % BOSSES.length + BOSSES.length) % BOSSES.length;
+    c.s.dungeon = {
+      weekStart: ws, bossName: BOSSES[idx], rank: rankOf(level).letter,
+      maxHp: dailyDamage(level, c.s.difficulty) * 5, damage: 0, defeated: false, extraction: null
+    };
+  }
+  return { state: c.s, events: c.events };
+}
+
+function logProgress(state, type, amount, todayS, rnd = Math.random) {
+  const q = state.quest;
+  const tgt = q.targets[type];
+  if (!state.accepted || !(amount > 0) || q.date !== todayS || q.rested || tgt == null) return { state, events: [] };
+  const c = ctx(state);
+  const old = q.progress[type] || 0;
+  const nw = old + amount;
+  const share = Math.floor(questXp(state.level) / QUEST_SIZE);
+  const gain = Math.floor(share * Math.min(nw, tgt) / tgt) - Math.floor(share * Math.min(old, tgt) / tgt);
+  c.s.quest.progress[type] = nw;
+  grantXp(c, gain);
+  if (nw >= tgt && !c.s.quest.statsAwarded.includes(type)) {
+    const st = EX[type].stat;
+    c.s.stats[st] = (c.s.stats[st] ?? BASE_STAT) + 1;
+    c.s.quest.statsAwarded.push(type);
+  }
+  const cq = c.s.quest;
+  if (!cq.completed && Object.entries(cq.targets).every(([t, v]) => (cq.progress[t] || 0) >= v)) completeQuest(c);
+  damageBoss(c, type, amount, rnd);
+  return { state: c.s, events: c.events };
+}
+
+function logPenalty(state, amount) {
+  const p = state.penalty;
+  if (!p || !(amount > 0)) return { state, events: [] };
+  const s = structuredClone(state);
+  const progress = p.progress + amount;
+  if (progress >= p.target) { s.penalty = null; return { state: s, events: [{ type: 'PenaltyCleared' }] }; }
+  s.penalty.progress = progress;
+  return { state: s, events: [] };
+}
+
+function useRestDay(state, todayS) {
+  const q = state.quest;
+  if (state.restTokens <= 0 || q.date !== todayS || q.completed || q.rested) return state;
+  const s = structuredClone(state);
+  s.restTokens--; s.quest.rested = true;
+  return s;
+}
+
+function allocate(state, stat) {
+  if (state.freePoints <= 0) return state;
+  const s = structuredClone(state);
+  s.freePoints--; s.stats[stat] = (s.stats[stat] ?? BASE_STAT) + 1;
+  return s;
+}
+
+const EVENT_TITLE = {
+  QuestComplete: 'КВЕСТ ВЫПОЛНЕН', LevelUp: 'УРОВЕНЬ ПОВЫШЕН', RankUp: 'РАНГ ПОВЫШЕН',
+  PenaltyApplied: 'ШТРАФНАЯ ЗОНА', PenaltyCleared: 'ШТРАФ СНЯТ', BossDefeated: 'ПОДЗЕМЕЛЬЕ ЗАЧИЩЕНО',
+  ShadowExtracted: 'ИЗВЛЕЧЕНИЕ ТЕНИ', ExtractionFailed: 'ИЗВЛЕЧЕНИЕ ПРОВАЛЕНО', RestTokenEarned: 'ДЕНЬ ОТДЫХА'
+};
+function eventText(e) {
+  switch (e.type) {
+    case 'QuestComplete': return `Ежедневный квест завершён.\nБонус: +${e.xp} XP\nСерия: ${e.streak} дн.`;
+    case 'LevelUp': return `Вы достигли уровня ${e.level}.\nПолучено свободных очков: ${e.points}`;
+    case 'RankUp': return `Ваш ранг: ${e.rank.letter} — ${e.rank.title}.`;
+    case 'PenaltyApplied': return `Квест не выполнен (пропущено дней: ${e.missed}).\nСерия сброшена, потеряно ${e.xpLost} XP.\nВыживите в штрафной зоне: ${e.burpees} берпи.\nПока штраф активен, опыт уменьшен вдвое.`;
+    case 'PenaltyCleared': return 'Вы выжили в штрафной зоне.\nОпыт снова начисляется полностью.';
+    case 'BossDefeated': return `Босс «${e.name}» повержен.\nНаграда: +${e.xp} XP`;
+    case 'ShadowExtracted': return `«${e.shadow.name}» (${e.shadow.tier}) присягает вам на верность.\nБонус к опыту: +${e.shadow.bonus}%\nВстань.`;
+    case 'ExtractionFailed': return `Тень рассеялась. Шанс был ${e.chance}%.\nСледующая попытка будет увереннее.`;
+    case 'RestTokenEarned': return 'Серия достигла недели. Вы получили жетон дня отдыха.';
+  }
+  return '';
+}
+
+
+</script>
+<script>
+// ---- Хранилище ----
+const KEY = 'arise-state-v1';
+function load() { try { const j = localStorage.getItem(KEY); if (j) return Object.assign(newState(), JSON.parse(j)); } catch (e) {} return newState(); }
+let persistOk = true;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { persistOk = false; } }
+
+let S = load();
+let tab = 'quest';
+let events = [];
+let restEnd = 0, plankStart = 0, dialog = null;
+const today = () => dateStr(new Date());
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+
+function commit(r) { S = r.state; save(); events = events.concat(r.events || []); render(); }
+function refreshDay() { const r = refresh(S, today()); if (r.state !== S || r.events.length) commit(r); }
+
+const ICONS = {
+  quest: '<svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
+  status: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>',
+  gate: '<svg viewBox="0 0 24 24"><path d="M12 3l9 17H3z"/><path d="M12 10v4M12 17v.5"/></svg>',
+  army: '<svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 3 7 7v11l-3-2-2 2-2-2-2 2-2-2-3 2V10c0-4 3-7 7-7z"/><circle cx="9.5" cy="10.5" r="1"/><circle cx="14.5" cy="10.5" r="1"/></svg>',
+  set: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>'
+};
+const TABS = [['quest', 'Квест'], ['status', 'Статус'], ['gate', 'Врата'], ['army', 'Армия'], ['set', 'Опции']];
+
+const win = (title, cls, body) => `<section class="win ${cls || ''}"><h2>${title}</h2>${body}</section>`;
+const bar = (p, color) => `<div class="bar"${color ? ` style="--a:${color}"` : ''}><i style="width:${Math.max(0, Math.min(1, p)) * 100}%"></i></div>`;
+const rankColor = l => ({ E: 'var(--dim)', D: 'var(--green)', C: 'var(--blue)', B: 'var(--purple)', A: 'var(--gold)', S: 'var(--red)' }[l]);
+
+function fmtTime(sec) { return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+
+// ---- Экраны ----
+function viewQuest() {
+  const q = S.quest; let h = '';
+  const restLeft = Math.ceil((restEnd - Date.now()) / 1000);
+  if (restLeft > 0) h += win('Отдых', 'cyan', `<div class="row"><span class="timer mono" id="restTimer">${fmtTime(restLeft)}</span><button class="btn" style="--a:var(--cyan)" data-act="skipRest">Пропустить</button></div>`);
+  if (S.penalty) {
+    const p = S.penalty;
+    h += win('Штрафная зона', 'red', `<p class="col">Выживите. Пока штраф активен, опыт уменьшен вдвое.</p>
+      <p class="b mono" style="margin-block:8px 6px">Берпи: ${p.progress} / ${p.target}</p>${bar(p.progress / p.target, 'var(--red)')}
+      <div class="btns" style="margin-top:10px">${[5, 10, 20].map(n => `<button class="btn" style="--a:var(--red)" data-act="pen" data-n="${n}">+${n}</button>`).join('')}</div>`);
+  }
+  const cls = q.completed ? 'green' : q.rested ? 'grey' : '';
+  let body = `<p class="dim">Подготовка к тому, чтобы стать сильнее</p>
+    <p class="gold small" style="margin-block:4px 12px">Серия: ${S.streak} дн. · Бонус к опыту: +${streakBonusPct(S) + shadowBonusPct(S)}%</p>`;
+  if (q.completed) body += `<p class="b col" style="margin-bottom:10px">КВЕСТ ВЫПОЛНЕН. Можно продолжать: лишние повторения бьют босса.</p>`;
+  if (q.rested) body += `<p class="b dim" style="margin-bottom:10px">День отдыха. Серия сохранена.</p>`;
+  body += '<div class="stack" style="gap:16px">';
+  DAILY.forEach(t => {
+    const tg = q.targets[t]; if (tg == null) return;
+    const d = q.progress[t] || 0, ex = EX[t], done = d >= tg, dis = q.rested ? 'disabled' : '';
+    const unit = ex.unit ? ' ' + ex.unit : '';
+    let btns = '';
+    if (t === 'PLANK') btns += plankStart ? `<button class="btn" style="--a:var(--gold)" data-act="plankStop" id="plankBtn">■ ${valueText('PLANK', Math.floor((Date.now() - plankStart) / 1000))}</button>` : `<button class="btn" data-act="plankStart" ${dis}>▶ Старт</button>`;
+    btns += quickSteps(t).map(n => `<button class="btn" data-act="log" data-t="${t}" data-n="${n}" ${dis}>${stepLabel(t, n)}</button>`).join('');
+    btns += `<button class="btn" data-act="custom" data-t="${t}" ${dis}>…</button>`;
+    body += `<div class="ex ${done ? 'done' : ''}"><div class="row"><span class="b" style="${done ? 'color:var(--green)' : ''}">${ex.title}</span><span class="b mono col">${valueText(t, d)} / ${valueText(t, tg)}${unit}</span></div>${bar(d / tg)}<div class="btns">${btns}</div></div>`;
+  });
+  body += `</div><p class="small" style="color:var(--red);margin-top:14px">Внимание! Если ежедневный квест не выполнен, последуют соответствующие штрафы.</p>`;
+  h += win('Ежедневный квест', cls, body);
+  if (!q.completed && !q.rested && S.restTokens > 0) h += `<button class="btn grey wide" style="--a:var(--dim)" data-act="rest">День отдыха (жетонов: ${S.restTokens})</button>`;
+  return h;
+}
+
+function viewStatus() {
+  const rk = rankOf(S.level), need = xpToNext(S.level);
+  let h = win('Статус', '', `<div class="row" style="justify-content:flex-start;gap:14px;flex-wrap:nowrap">
+      <div class="rank" style="--a:${rankColor(rk.letter)}">${rk.letter}</div>
+      <div style="min-width:0"><div class="title-xl">${esc(S.name)}</div><div style="color:${rankColor(rk.letter)}">${rk.title}</div><div class="b" style="color:var(--cyan)">Уровень ${S.level}</div></div></div>
+      <div class="row dim small mono" style="margin-top:14px"><span>XP</span><span>${S.xp} / ${need}</span></div>
+      <div style="margin-top:4px">${bar(S.xp / need, 'var(--cyan)')}</div>`);
+  const stats = Object.keys(STATS).map(k => `<div class="stat"><span>${STATS[k]} (${k})</span><span class="row" style="gap:10px;flex-wrap:nowrap"><span class="big" style="color:var(--cyan)">${S.stats[k]}</span>${S.freePoints > 0 ? `<button class="btn" style="--a:var(--gold);min-width:44px" data-act="alloc" data-s="${k}">+</button>` : ''}</span></div>`).join('');
+  h += win('Характеристики', '', stats + `<p class="small" style="margin-top:8px;color:${S.freePoints > 0 ? 'var(--gold)' : 'var(--dim)'}">${S.freePoints > 0 ? 'Свободных очков: ' + S.freePoints : 'Свободных очков нет. Получайте их за уровни.'}</p>
+    <p class="small dim" style="margin-top:4px">Статы растут за выполненные упражнения. Интеллект повышает шанс извлечения теней.</p>`);
+  const kv = (a, b) => `<div class="kv"><span class="dim">${a}</span><span class="b mono">${b}</span></div>`;
+  h += win('Досье', '', kv('Серия', S.streak + ' дн.') + kv('Лучшая серия', S.bestStreak + ' дн.') + kv('Квестов выполнено', S.totalQuests) + kv('Бонус серии', '+' + streakBonusPct(S) + '%') + kv('Бонус теней', '+' + shadowBonusPct(S) + '%') + kv('Жетоны отдыха', S.restTokens));
+  return h;
+}
+
+function viewGate() {
+  const d = S.dungeon;
+  if (!d) return win('Врата', '', '<p class="dim">Врата ещё не открылись.</p>');
+  const hp = Math.max(0, d.maxHp - d.damage);
+  let st = '';
+  if (d.defeated) {
+    st = `<p class="b col">ПОДЗЕМЕЛЬЕ ЗАЧИЩЕНО</p><p style="margin-top:4px">` +
+      (d.extraction == null ? '<span class="dim">Тени закончились: вся армия уже собрана.</span>' :
+        d.extraction === 'FAILED' ? '<span class="dim">Извлечение тени не удалось. Повезёт в следующий раз.</span>' :
+          `<span class="b" style="color:var(--purple)">Извлечена тень: ${esc(d.extraction)}</span>`) + '</p>';
+  } else {
+    const left = Math.max(0, epochDay(d.weekStart) + 7 - epochDay(today()));
+    st = `<p class="dim">Каждое повторение, километр и секунда планки бьют босса. До закрытия врат: ${left} дн.</p>`;
+  }
+  let h = win(`Врата подземелья · ранг ${d.rank}`, d.defeated ? 'green' : '', `<div class="title-xl">${esc(d.bossName)}</div>
+    <div class="row mono small" style="margin-top:10px"><span class="dim">HP</span><span class="b" style="color:var(--red)">${hp} / ${d.maxHp}</span></div>
+    <div style="margin-block:4px 12px">${bar(hp / d.maxHp, 'var(--red)')}</div>${st}`);
+  const all = S.shadows.length >= SHADOWS.length;
+  h += win('Извлечение теней', 'purple', all ? '<p class="col">Вся армия в сборе.</p>' :
+    `<p class="dim">Победите босса за неделю, чтобы получить шанс извлечь тень.</p><p class="b col" style="margin-top:6px">Шанс сейчас: ${extractionChancePct(S)}%</p><p class="small dim">Растёт с интеллектом и после каждой неудачи.</p>`);
+  return h;
+}
+
+function viewArmy() {
+  const rows = SHADOWS.map(s => { const own = S.shadows.includes(s.name);
+    return `<div class="row" style="padding-block:5px"><div><div class="b" style="font-size:16px;${own ? 'color:var(--purple)' : 'color:var(--dim)'}">${own ? s.name : '???'}</div><div class="small dim">${own ? s.tier : 'не извлечена'}</div></div><span class="b mono" style="color:var(--gold)">${own ? '+' + s.bonus + '%' : ''}</span></div>`; }).join('');
+  return win('Армия теней', 'purple', `<p class="b col">Теней: ${S.shadows.length} / ${SHADOWS.length}</p><p class="small" style="color:var(--gold);margin-bottom:8px">Суммарный бонус к опыту: +${shadowBonusPct(S)}%</p>${rows}`);
+}
+
+function chips(items, cur, act) { return `<div class="btns">${items.map(([v, l]) => `<button class="chip ${String(v) === String(cur) ? 'on' : ''}" data-act="${act}" data-v="${v}">${l}</button>`).join('')}</div>`; }
+function viewSettings() {
+  let h = win('Игрок', '', `<div class="stack"><label class="small dim" for="nameIn">Имя</label><input id="nameIn" type="text" value="${esc(S.name)}" maxlength="24"><button class="btn" data-act="saveName">Сохранить имя</button></div>`);
+  h += win('Сложность', '', chips(Object.entries(DIFFS).map(([k, v]) => [k, v.title]), S.difficulty, 'diff') + `<p class="small dim" style="margin-top:8px">${DIFFS[S.difficulty].hint}. Новая сложность применится к завтрашнему квесту и следующим вратам.</p>`);
+  h += win('Отдых между подходами', '', chips([[0, 'выкл'], [30, '30 с'], [60, '60 с'], [90, '90 с'], [120, '120 с']], S.restSeconds, 'restSec'));
+  h += win('Сохранение', 'gold', `<p class="small dim">Прогресс хранится в этом браузере на этом телефоне. Если очистить данные Safari, он пропадёт. Скопируйте резервную копию и сохраните её в заметках.</p>
+    ${persistOk ? '' : '<p class="small" style="color:var(--red);margin-top:6px">Браузер не даёт сохранять данные. Выйдите из приватного режима.</p>'}
+    <div class="btns" style="margin-top:10px"><button class="btn" style="--a:var(--gold)" data-act="export">Копировать копию</button><button class="btn" style="--a:var(--gold)" data-act="import">Восстановить</button></div>`);
+  h += `<button class="btn red wide" style="--a:var(--red)" data-act="reset">Сбросить Систему</button>`;
+  return h;
+}
+
+function viewWelcome() {
+  return `<div class="welcome">${win('Уведомление', '', `<div class="stack"><p class="b" style="font-size:18px">Вы получили квалификацию Игрока.</p>
+    <p class="dim">Каждый день вас ждёт квест: отжимания, пресс, приседания, бег и планка. Выполнение даёт опыт, статы и ранги. Пропуск отправляет в штрафную зону.</p>
+    <label class="small dim" for="nameIn">Имя Игрока</label><input id="nameIn" type="text" maxlength="24" autocomplete="off">
+    <button class="btn wide" data-act="accept">Принять</button></div>`)}</div>`;
+}
+
+// ---- Окна поверх экрана ----
+const EVT_COLOR = { PenaltyApplied: 'red', ExtractionFailed: 'red', ShadowExtracted: 'purple', LevelUp: 'gold', RankUp: 'gold', RestTokenEarned: 'gold' };
+function viewModal() {
+  if (dialog) {
+    if (dialog.kind === 'custom') {
+      const t = dialog.t, hint = t === 'RUN' ? 'Километры, например 2.5' : t === 'PLANK' ? 'Секунды' : 'Повторения';
+      return `<div class="overlay"><section class="win"><h2>${EX[t].title}</h2><div class="stack"><label class="small dim" for="amt">${hint}</label><input id="amt" type="number" inputmode="decimal" min="0" step="any"><div class="btns"><button class="btn" data-act="customOk">Записать</button><button class="btn" style="--a:var(--dim)" data-act="dlgClose">Отмена</button></div></div></section></div>`;
+    }
+    if (dialog.kind === 'reset') return `<div class="overlay"><section class="win red"><h2>Сброс</h2><div class="stack"><p>Весь прогресс будет удалён без возможности восстановления.</p><div class="btns"><button class="btn" style="--a:var(--red)" data-act="resetOk">Сбросить</button><button class="btn" style="--a:var(--dim)" data-act="dlgClose">Отмена</button></div></div></section></div>`;
+    if (dialog.kind === 'export') return `<div class="overlay"><section class="win gold"><h2>Копия</h2><div class="stack"><p class="small dim">Скопируйте весь текст и сохраните в заметках.</p><textarea id="expTxt" readonly>${esc(JSON.stringify(S))}</textarea><div class="btns"><button class="btn" style="--a:var(--gold)" data-act="copyExp">Копировать</button><button class="btn" style="--a:var(--dim)" data-act="dlgClose">Закрыть</button></div><p class="small dim" id="copyMsg"></p></div></section></div>`;
+    if (dialog.kind === 'import') return `<div class="overlay"><section class="win gold"><h2>Восстановление</h2><div class="stack"><p class="small dim">Вставьте текст резервной копии. Текущий прогресс будет заменён.</p><textarea id="impTxt"></textarea><p class="small" id="impMsg" style="color:var(--red)"></p><div class="btns"><button class="btn" style="--a:var(--gold)" data-act="impOk">Восстановить</button><button class="btn" style="--a:var(--dim)" data-act="dlgClose">Отмена</button></div></div></section></div>`;
+  }
+  const e = events[0];
+  if (!e) return '';
+  return `<div class="overlay"><section class="win ${EVT_COLOR[e.type] || 'green'} flash"><h2>${EVENT_TITLE[e.type]}</h2><div class="stack"><p class="pre">${esc(eventText(e))}</p><button class="btn wide" style="--a:var(--a)" data-act="evtOk">${e.type === 'PenaltyApplied' ? 'Принять наказание' : 'Принять'}</button></div></section></div>`;
+}
+
+// ---- Отрисовка ----
+function render() {
+  const app = $('app');
+  const ae = document.activeElement, keep = ae && ae.id && ae.tagName === 'INPUT' ? { id: ae.id, v: ae.value } : null;
+  if (!S.accepted) { $('tabbar').hidden = true; app.innerHTML = viewWelcome(); }
+  else {
+    $('tabbar').hidden = false;
+    $('tabs').innerHTML = TABS.map(([k, l]) => `<button class="tab ${tab === k ? 'on' : ''}" data-act="tab" data-v="${k}" aria-label="${l}">${ICONS[k]}<span>${l}</span></button>`).join('');
+    app.innerHTML = ({ quest: viewQuest, status: viewStatus, gate: viewGate, army: viewArmy, set: viewSettings })[tab]();
+  }
+  if (keep) { const n = $(keep.id); if (n) { n.value = keep.v; } }
+  const m = $('modal'), had = m.firstChild && m.firstChild.dataset ? m.dataset.sig : '';
+  const html = viewModal(), sig = dialog ? dialog.kind + (dialog.t || '') : events[0] ? 'e' + events.length : '';
+  if (m.dataset.sig !== sig || !html) { m.innerHTML = html; m.dataset.sig = sig; const f = m.querySelector('input,textarea'); if (f && !f.readOnly) f.focus(); }
+}
+
+// ---- События ----
+function startRest() { if (S.restSeconds > 0) restEnd = Date.now() + S.restSeconds * 1000; }
+function doLog(t, n) { const r = logProgress(S, t, n, today()); if (r.state === S) return; commit(r); if (t !== 'RUN' && t !== 'PLANK') { startRest(); render(); } }
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]'); if (!b) return;
+  const d = b.dataset, a = d.act, n = Number(d.n);
+  switch (a) {
+    case 'tab': tab = d.v; render(); window.scrollTo(0, 0); break;
+    case 'accept': S = accept(S, $('nameIn').value); save(); refreshDay(); render(); break;
+    case 'log': doLog(d.t, n); break;
+    case 'pen': commit(logPenalty(S, n)); startRest(); render(); break;
+    case 'rest': S = useRestDay(S, today()); save(); render(); break;
+    case 'skipRest': restEnd = 0; render(); break;
+    case 'plankStart': plankStart = Date.now(); render(); break;
+    case 'plankStop': { const sec = Math.floor((Date.now() - plankStart) / 1000); plankStart = 0; if (sec >= 1) doLog('PLANK', sec); else render(); break; }
+    case 'custom': dialog = { kind: 'custom', t: d.t }; render(); break;
+    case 'customOk': { const t = dialog.t, v = parseFloat(String($('amt').value).replace(',', '.')); dialog = null; if (v > 0) doLog(t, t === 'RUN' ? Math.round(v * 1000) : Math.round(v)); else render(); break; }
+    case 'alloc': S = allocate(S, d.s); save(); render(); break;
+    case 'evtOk': events.shift(); render(); break;
+    case 'saveName': { const v = $('nameIn').value.trim(); if (v) { S.name = v; save(); render(); } break; }
+    case 'diff': S.difficulty = d.v; save(); render(); break;
+    case 'restSec': S.restSeconds = Number(d.v); save(); render(); break;
+    case 'reset': dialog = { kind: 'reset' }; render(); break;
+    case 'resetOk': try { localStorage.removeItem(KEY); } catch (e) {} S = newState(); events = []; dialog = null; tab = 'quest'; restEnd = 0; plankStart = 0; render(); break;
+    case 'export': dialog = { kind: 'export' }; render(); break;
+    case 'copyExp': { const t = $('expTxt'); t.select(); const ok = () => { $('copyMsg').textContent = 'Скопировано.'; }; const fb = () => { $('copyMsg').textContent = 'Текст выделен: нажмите «Скопировать» в меню телефона.'; };
+      try { navigator.clipboard.writeText(t.value).then(ok, fb); } catch (e) { fb(); } break; }
+    case 'import': dialog = { kind: 'import' }; render(); break;
+    case 'impOk': { try { const o = JSON.parse($('impTxt').value); if (!o || typeof o !== 'object' || !o.stats || !o.quest) throw 0; S = Object.assign(newState(), o); save(); dialog = null; refreshDay(); render(); } catch (e) { $('impMsg').textContent = 'Не удалось прочитать копию. Вставьте весь текст целиком.'; } break; }
+    case 'dlgClose': dialog = null; render(); break;
+  }
+});
+
+// Таймеры обновляют только цифры на экране квеста.
+setInterval(() => {
+  if (tab !== 'quest' || !S.accepted || dialog || events.length) return;
+  const rl = Math.ceil((restEnd - Date.now()) / 1000);
+  const rt = $('restTimer');
+  if (restEnd && rl <= 0) { restEnd = 0; render(); }
+  else if (rt) rt.textContent = fmtTime(rl);
+  const pb = $('plankBtn'); if (pb && plankStart) pb.textContent = '■ ' + valueText('PLANK', Math.floor((Date.now() - plankStart) / 1000));
+}, 500);
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDay(); });
+refreshDay();
+render();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

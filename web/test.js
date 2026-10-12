@@ -1,0 +1,17 @@
+const E = require('./engine.js'); const assert = require('assert');
+const rnd = () => 0;
+const day1 = '2026-03-02';
+const start = () => E.refresh(E.accept(E.newState(), 'T'), day1, rnd).state;
+const completeAll = (s, d) => { let ev = []; for (const [t, v] of Object.entries(s.quest.targets)) { const r = E.logProgress(s, t, v, d, rnd); s = r.state; ev = ev.concat(r.events); } return { state: s, events: ev }; };
+assert.equal(E.weekStart('2026-03-04'), '2026-03-02'); assert.equal(E.weekStart('2026-03-08'), '2026-03-02'); assert.equal(E.weekStart('2026-03-09'), '2026-03-09');
+assert.equal(E.target('PUSHUPS', 1, 'NORMAL'), 10); assert.equal(E.target('RUN', 200, 'NORMAL'), 10000); assert(E.target('PUSHUPS', 1, 'EASY') < 10);
+let s = start(); assert.equal(Object.keys(s.quest.targets).length, 5); assert(s.dungeon);
+let r = completeAll(s, day1); assert(r.state.quest.completed); assert.equal(r.state.streak, 1); assert(r.events.some(e => e.type === 'QuestComplete')); assert.equal(r.state.stats.STR, 11);
+s = E.logProgress(start(), 'PUSHUPS', 5, day1, rnd).state; r = E.refresh(s, '2026-03-03', rnd); assert.equal(r.state.streak, 0); assert(r.state.penalty); assert(r.events.some(e => e.type === 'PenaltyApplied'));
+let done = completeAll(start(), day1).state; r = E.refresh(done, '2026-03-03', rnd); assert(!r.state.penalty); assert.equal(r.state.streak, 1);
+r = E.refresh(done, '2026-03-06', rnd); assert.equal(r.events.find(e => e.type === 'PenaltyApplied').missed, 3);
+s = E.useRestDay(start(), day1); assert(s.quest.rested); assert.equal(s.restTokens, 0); assert(!E.refresh(s, '2026-03-03', rnd).state.penalty);
+s = start(); r = E.logProgress(s, 'PUSHUPS', s.dungeon.maxHp, day1, rnd); assert(r.state.dungeon.defeated); assert.deepEqual(r.state.shadows, ['Iron']);
+s = start(); s.xp = E.xpToNext(1) - 1; s = E.logProgress(s, 'PUSHUPS', 10, day1, rnd).state; assert.equal(s.level, 2); assert.equal(s.freePoints, 3); assert.equal(E.allocate(s, 'AGI').stats.AGI, 11);
+let p = E.refresh(start(), '2026-03-04', rnd).state; assert(p.penalty); const cl = E.logPenalty(p, p.penalty.target); assert(!cl.state.penalty);
+console.log('ALL OK');
