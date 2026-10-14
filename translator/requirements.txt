@@ -1,0 +1,12 @@
+numpy
+pillow
+opencv-python
+rapidocr-onnxruntime
+# перевод офлайн (по умолчанию)
+argostranslate
+# перевод онлайн (запасной вариант, --engine google)
+deep-translator
+# захват экрана ПК (--source screen)
+mss
+# тесты
+pytest
